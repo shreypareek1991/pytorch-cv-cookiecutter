@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: {{ cookiecutter.project_slug }}-mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      BACKEND_STORE_URI: sqlite:///storage/{{ cookiecutter.project_slug }}.db
+      ARTIFACT_ROOT: /mlflow/artifacts
+      MLFLOW_TRACKING_USERNAME: admin
+      MLFLOW_TRACKING_PASSWORD: admin
+    volumes:
+      - ./storage:/mlflow
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:///storage/{{ cookiecutter.project_slug }}.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+

@@ -1,0 +1,15 @@
+# Settings for serving/exporting the trained model.
+model_path: "artifacts/latest.ckpt"
+export:
+  format: "torchscript"
+  opset: 17
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 2
+  timeout: 120
+  enable_tracing: false
+telemetry:
+  inference_logging: true
+  latency_budget_ms: 120
+

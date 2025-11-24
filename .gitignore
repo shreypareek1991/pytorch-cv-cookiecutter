@@ -1,0 +1,11 @@
+# Cookiecutter render artifacts
+**/__pycache__/
+**/.ruff_cache/
+**/.mypy_cache/
+**/.pytest_cache/
+**/.venv/
+**/.uv/
+**/uv.lock
+**/.DS_Store
+cookiecutter-python-temp/
+

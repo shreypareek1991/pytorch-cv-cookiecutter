@@ -1,0 +1,23 @@
+FROM python:{{ cookiecutter.python_version }}-slim AS base
+
+ENV UV_SYSTEM_PYTHON=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /opt/app
+
+COPY docker/apt-packages.txt /tmp/apt-packages.txt
+RUN apt-get update && \
+    xargs -a /tmp/apt-packages.txt apt-get install -y --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml README.md ./
+COPY requirements ./requirements
+COPY src ./src
+COPY scripts ./scripts
+COPY configs ./configs
+
+RUN python3 -m pip install --upgrade pip uv && uv sync --frozen --group deploy
+
+CMD ["uv", "run", "python", "scripts/serve.py", "api"]
+

@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environments
+.env
+.envrc
+.venv
+.python-version
+.uv/
+
+# PyTorch / data
+data/
+checkpoints/
+mlruns/
+artifacts/
+
+# Editors
+.idea/
+.vscode/
+
+# Build
+dist/
+build/
+*.egg-info/
+reports/
+
+# Docker
+.docker/
+*.log
+

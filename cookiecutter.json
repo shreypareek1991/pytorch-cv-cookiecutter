@@ -1,0 +1,23 @@
+{
+  "full_name": "Your Name",
+  "organization": "Vision Org",
+  "email": "team@example.com",
+  "project_name": "Next Gen Vision",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
+  "project_description": "A computer vision system powered by PyTorch.",
+  "python_package": "{{ cookiecutter.project_slug.replace('-', '_') }}",
+  "python_version": "3.11",
+  "docker_image_name": "ghcr.io/{{ cookiecutter.organization.lower().replace(' ', '-') }}/{{ cookiecutter.project_slug }}:latest",
+  "use_cuda_default": "y",
+  "cuda_version": "12.1.1",
+  "base_ubuntu_version": "22.04",
+  "enable_mlflow_tracking": "n",
+  "install_dependencies": "y",
+  "default_device": "cuda",
+  "mlflow_backend_store": "mlruns",
+  "mlflow_artifact_root": "artifacts",
+  "mlflow_admin_email": "{{ cookiecutter.email }}",
+  "infra_namespace": "{{ cookiecutter.organization.lower().replace(' ', '-') }}",
+  "repo_visibility": ["private", "public"]
+}
+

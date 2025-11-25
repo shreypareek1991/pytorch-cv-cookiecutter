@@ -4,40 +4,28 @@ This repository bootstraps computer-vision projects that use PyTorch, uv-based d
 
 ## Usage
 
-### 🎯 Recommended: Use the installer (shows logo & welcome message first)
+### Quick Start
 
-**One-liner installation:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/shreypareek1991/pytorch-cv-cookiecutter/main/install.sh | bash
-```
-
-**Or clone and run the wrapper:**
 ```bash
 # Clone this repository
 git clone https://github.com/shreypareek1991/pytorch-cv-cookiecutter.git
 cd pytorch-cv-cookiecutter
 
-# Run the wrapper script
-./run_template.sh
+# Generate a new project
+cookiecutter .
 ```
 
-The installer/wrapper will:
-1. ✅ Display your company logo
-2. ✅ Show a welcome message with descriptions of all questions
-3. ✅ Wait for you to press Enter
-4. ✅ Then start the cookiecutter prompts
-
-### Standard cookiecutter command (no welcome message)
+### Direct Usage
 
 ```bash
-# Direct usage (prompts appear immediately, no logo/welcome)
+# Use directly from GitHub (no clone needed)
 cookiecutter https://github.com/shreypareek1991/pytorch-cv-cookiecutter
 
 # Or locally once cloned:
 cookiecutter /path/to/this/repo
 ```
 
-**Note:** When using the direct `cookiecutter` command, the logo and welcome message will appear AFTER you answer all prompts (due to cookiecutter's execution order).
+**Note:** The first prompt will display the logo and welcome message. Press Enter to continue to the configuration questions.
 
 ### Prompts
 

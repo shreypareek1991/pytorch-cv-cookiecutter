@@ -50,6 +50,8 @@ dev = [
   "black>=24.4.0",
   "isort>=5.13.0",
   "bandit>=1.7.8",
+  "mkdocs>=1.6",
+  "mkdocs-material>=9.5",
 ]
 deploy = [
   "fastapi>=0.112",

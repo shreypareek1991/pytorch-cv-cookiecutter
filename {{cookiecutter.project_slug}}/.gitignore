@@ -30,3 +30,6 @@ reports/
 .docker/
 *.log
 
+# MkDocs
+site/
+

@@ -116,12 +116,14 @@ def print_success_message() -> None:
          • make pre-commit        - Run all pre-commit checks
          • make docker-build      - Build Docker image
          • make docker-build-scan - Build and scan Docker image
+         • make docs              - Serve documentation website
          • uv run train_model --help    - See training options
          • uv run pytest          - Run tests
          • uv run python scripts/train.py run  - Start training
 
     📚 Documentation:
       • README.md - Project overview and setup
+      • make docs - Serve documentation website (MkDocs)
       • docs/docker.md - Docker usage and scanning
       • docs/mlflow.md - MLflow tracking setup
       • docs/remote_repo.md - Git remote configuration

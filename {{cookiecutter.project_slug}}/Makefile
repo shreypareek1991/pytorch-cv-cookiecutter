@@ -1,4 +1,4 @@
-.PHONY: sync dev test format lint train docker-build docker-run pre-commit
+.PHONY: sync dev test format lint train docker-build docker-run pre-commit docs docs-serve docs-build
 
 sync:
 	uv sync --all-extras
@@ -43,4 +43,13 @@ pre-commit:
 
 pre-commit-install:
 	uv run pre-commit install
+
+docs:
+	uv run mkdocs serve
+
+docs-serve:
+	uv run mkdocs serve
+
+docs-build:
+	uv run mkdocs build
 

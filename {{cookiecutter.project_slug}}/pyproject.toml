@@ -52,6 +52,7 @@ dev = [
   "bandit>=1.7.8",
   "mkdocs>=1.6",
   "mkdocs-material>=9.5",
+  "mkdocs-git-revision-date-localized-plugin>=1.2",
 ]
 deploy = [
   "fastapi>=0.112",

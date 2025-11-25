@@ -73,5 +73,5 @@ plugins:
   - git-revision-date-localized:
       enable_creation_date: true
 
-copyright: Copyright &copy; {{ "now"|date("%Y") }} {{ cookiecutter.organization }}
+copyright: Copyright &copy; 2024 {{ cookiecutter.organization }}
 

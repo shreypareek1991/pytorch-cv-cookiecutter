@@ -196,26 +196,26 @@ make docker-run
 
 - **`docker/Dockerfile`**: CUDA-enabled image (default)
   - Base: `nvidia/cuda:{{ cookiecutter.cuda_version }}-cudnn8-runtime-ubuntu{{ cookiecutter.base_ubuntu_version }}`
-  - Best for: Linux systems with NVIDIA GPUs
-  - Note: May not run natively on Apple Silicon (use `--platform linux/amd64` for scanning)
+  - Best for: Linux systems with NVIDIA GPUs (x86_64)
+  - Note: Automatically switches to CPU Dockerfile on ARM Macs
 
 - **`docker/Dockerfile.cpu`**: CPU-only image
-  - Base: `ubuntu:{{ cookiecutter.base_ubuntu_version }}`
+  - Base: `python:{{ cookiecutter.python_version }}-slim`
   - Best for: ARM Macs, CPU-only deployments, CI/CD
 
 ### Building Images
 
 ```bash
 # Using make
-make docker-build              # Build CUDA image
-make docker-build-cpu          # Build CPU image
+make docker-build              # Build default (auto-switches to CPU on ARM)
+make docker-build-cpu          # Build CPU image explicitly
+make docker-build-cuda         # Build CUDA image (x86_64 Linux only)
 make docker-build-scan         # Build and scan
 
 # Using scripts directly
-bash docker/build.sh           # Interactive build
+bash docker/build.sh           # Default build
 bash docker/build.sh --cpu     # Force CPU build
 bash docker/build.sh --scan    # Build and scan
-bash docker/build.sh --force-cuda --scan  # Build CUDA on ARM for scanning
 ```
 
 ### Running Containers
@@ -246,7 +246,7 @@ bash docker/scan.sh --image {{ cookiecutter.docker_image_name }}
 make docker-build-scan
 ```
 
-**Note:** On ARM Macs, you can build CUDA images for scanning (even if they can't run natively) using `--force-cuda` flag.
+**Note:** On ARM Macs, the build script automatically uses the CPU Dockerfile since CUDA images don't run natively on ARM.
 
 See `docs/docker.md` for detailed Docker documentation.
 

@@ -2,42 +2,48 @@
 
 ## Images
 
-- `docker/Dockerfile`: CUDA-first image using `nvidia/cuda:{{ cookiecutter.cuda_version }}-cudnn9-runtime-ubuntu{{ cookiecutter.base_ubuntu_version }}`. Requires NVIDIA Container Toolkit.
-- `docker/Dockerfile.cpu`: CPU-safe variant for Apple Silicon / non-NVIDIA hosts.
+- `docker/Dockerfile`: CUDA-enabled image using `nvidia/cuda:{{ cookiecutter.cuda_version }}-cudnn8-runtime-ubuntu{{ cookiecutter.base_ubuntu_version }}`. Requires NVIDIA Container Toolkit and x86_64 Linux host.
+- `docker/Dockerfile.cpu`: CPU-only variant for Apple Silicon / non-NVIDIA hosts or CPU-only deployments.
 
 ## Build
 
 ### Using Make (Recommended)
 
 ```bash
-# Build default image (CUDA on x86, CPU on ARM)
+# Build default image (auto-switches to CPU on ARM Macs)
 make docker-build
 
 # Build CPU image explicitly
 make docker-build-cpu
 
-# Build CUDA image (on ARM Mac: builds for linux/amd64, cannot run but can be scanned)
+# Build CUDA image (x86_64 Linux only)
 make docker-build-cuda
 
 # Build and scan in one command
 make docker-build-scan
-
-# Build CUDA image and scan (useful on ARM Macs for vulnerability scanning)
-make docker-build-cuda-scan
 ```
+
+**Note:** On ARM Macs, the build script automatically switches to the CPU Dockerfile since CUDA images don't run natively on ARM.
 
 ### Using Scripts Directly
 
 ```bash
-bash docker/build.sh --target runtime
+# Build default image
+bash docker/build.sh
+
+# Build CPU image
+bash docker/build.sh --cpu
+
+# Build with scan
+bash docker/build.sh --scan
 ```
 
 **Flags:**
-- `--platform linux/amd64` for CUDA base images.
-- `--platform linux/arm64` when building on Apple Silicon with the CPU Dockerfile.
-- `--force-cuda` or `--build-for-scan`: Build CUDA image on ARM Macs for scanning (uses `--platform linux/amd64`). The image cannot run natively but can be scanned with Trivy. Requires Docker buildx (usually pre-installed with Docker Desktop).
-- `--cpu`: Use CPU Dockerfile instead of CUDA.
-- `--scan`: Automatically run Trivy scan after building.
+- `--cpu`: Use CPU Dockerfile instead of CUDA
+- `--scan`: Automatically run Trivy scan after building
+- `--image IMAGE`: Specify custom image name
+- `--target TARGET`: Specify build target (default: runtime)
+- `--platform PLATFORM`: Override platform (e.g., `linux/amd64`)
 
 ## Run
 
@@ -54,7 +60,7 @@ make docker-run
 bash docker/run.sh --gpus all --env-file .env
 ```
 
-The script inspects host architecture and falls back to the CPU image on ARM by default. Override with `--force-cuda` if you are cross-building and have a compatible runtime.
+The script automatically uses the CPU Dockerfile on ARM Macs since CUDA images don't run natively on ARM.
 
 ## OS Packages
 
@@ -81,18 +87,12 @@ brew install trivy
 ```bash
 # Build and scan default image
 make docker-build-scan
-
-# On ARM Mac: Build CUDA image for scanning (cannot run, but can be scanned)
-make docker-build-cuda-scan
 ```
 
 **Scan after building (using scripts):**
 ```bash
 # Build and scan in one command
 bash docker/build.sh --scan
-
-# On ARM Mac: Build CUDA image for scanning
-bash docker/build.sh --force-cuda --scan
 ```
 
 **Scan an existing image (using Make):**
@@ -134,12 +134,17 @@ bash docker/build.sh --scan || exit 1
 
 ```bash
 # Docker operations
-make docker-build          # Build default image
-make docker-build-cpu      # Build CPU image
-make docker-build-cuda     # Build CUDA image (cross-platform on ARM)
+make docker-build          # Build default image (auto-switches to CPU on ARM)
+make docker-build-cpu      # Build CPU image explicitly
+make docker-build-cuda    # Build CUDA image (x86_64 Linux only)
 make docker-build-scan     # Build and scan default image
-make docker-build-cuda-scan # Build CUDA image and scan (ARM Mac friendly)
-make docker-run            # Run the container
+make docker-run           # Run the container
 make docker-scan           # Scan existing image
 ```
+
+## Platform Notes
+
+- **x86_64 Linux**: Can build and run both CUDA and CPU images
+- **ARM Macs**: Automatically uses CPU Dockerfile (CUDA images don't run natively)
+- **CUDA images**: Require NVIDIA GPU and NVIDIA Container Toolkit
 

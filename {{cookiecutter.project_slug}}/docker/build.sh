@@ -6,7 +6,6 @@ TARGET="runtime"
 DOCKERFILE="docker/Dockerfile"
 PLATFORM=""
 SCAN_AFTER_BUILD=false
-FORCE_CUDA=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -30,25 +29,16 @@ while [[ $# -gt 0 ]]; do
       SCAN_AFTER_BUILD=true
       shift
       ;;
-    --force-cuda|--build-for-scan)
-      FORCE_CUDA=true
-      shift
-      ;;
     *)
       shift
       ;;
   esac
 done
 
-if [[ "$(uname -m)" == "arm64" && "$DOCKERFILE" != "docker/Dockerfile.cpu" ]]; then
-  if [[ "${FORCE_CUDA}" == "true" ]]; then
-    echo "🔧 ARM host detected. Building CUDA image for linux/amd64 (for scanning only)."
-    PLATFORM="--platform linux/amd64"
-  else
-    echo "⚠️  ARM host detected. Switching to CPU Dockerfile to avoid CUDA incompatibilities."
-    echo "   Use --force-cuda or --build-for-scan to build CUDA image for scanning."
-    DOCKERFILE="docker/Dockerfile.cpu"
-  fi
+# Auto-switch to CPU Dockerfile on ARM Macs (CUDA doesn't run natively)
+if [[ "$(uname -m)" == "arm64" && "$DOCKERFILE" == "docker/Dockerfile" ]]; then
+  echo "⚠️  ARM host detected. Switching to CPU Dockerfile (CUDA images don't run on ARM Macs)."
+  DOCKERFILE="docker/Dockerfile.cpu"
 fi
 
 docker build ${PLATFORM} \

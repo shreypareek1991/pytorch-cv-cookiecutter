@@ -1,3 +1,7 @@
+# CPU Dockerfile
+# Base: Python slim image (includes Python, smaller footprint)
+# Note: This file mirrors Dockerfile structure - only base image differs
+
 FROM python:{{ cookiecutter.python_version }}-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -5,20 +9,22 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /opt/app
 
+# Install OS packages (Python already in base image)
 COPY docker/apt-packages.txt /tmp/apt-packages.txt
 RUN apt-get update && \
     xargs -a /tmp/apt-packages.txt apt-get install -y --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
+# Copy project files
 COPY pyproject.toml uv.lock README.md ./
 COPY requirements ./requirements
 COPY src ./src
 COPY scripts ./scripts
 COPY configs ./configs
 
+# Install Python dependencies
 RUN python3 -m pip install --upgrade pip uv && \
     uv sync --frozen --python python3 --extra deploy
 
 FROM base AS runtime
 CMD ["uv", "run", "python", "scripts/serve.py", "api"]
-

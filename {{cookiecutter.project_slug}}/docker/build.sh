@@ -5,6 +5,7 @@ IMAGE="{{ cookiecutter.docker_image_name }}"
 TARGET="runtime"
 DOCKERFILE="docker/Dockerfile"
 PLATFORM=""
+SCAN_AFTER_BUILD=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -24,6 +25,10 @@ while [[ $# -gt 0 ]]; do
       IMAGE="$2"
       shift 2
       ;;
+    --scan)
+      SCAN_AFTER_BUILD=true
+      shift
+      ;;
     *)
       shift
       ;;
@@ -40,4 +45,10 @@ docker build ${PLATFORM} \
   --target "${TARGET}" \
   -t "${IMAGE}" \
   .
+
+if [[ "${SCAN_AFTER_BUILD}" == "true" ]]; then
+  echo ""
+  echo "🔍 Running Trivy vulnerability scan..."
+  bash docker/scan.sh --image "${IMAGE}"
+fi
 

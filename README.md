@@ -4,9 +4,30 @@ This repository bootstraps computer-vision projects that use PyTorch, uv-based d
 
 ## Usage
 
+### Recommended: Use the wrapper script (shows welcome message first)
+
 ```bash
-uvx cookiecutter gh:<your-org>/<this-repo>
-# or run locally once cloned:
+# Clone this repository
+git clone https://github.com/shreypareek1991/pytorch-cv-cookiecutter.git
+cd pytorch-cv-cookiecutter
+
+# Run the wrapper script
+./run_template.sh
+```
+
+The wrapper script will:
+1. Display your company logo
+2. Show a welcome message with descriptions of all questions
+3. Wait for you to press Enter
+4. Then start the cookiecutter prompts
+
+### Standard cookiecutter command
+
+```bash
+# Direct usage (prompts appear immediately)
+cookiecutter https://github.com/shreypareek1991/pytorch-cv-cookiecutter
+
+# Or locally once cloned:
 cookiecutter /path/to/this/repo
 ```
 

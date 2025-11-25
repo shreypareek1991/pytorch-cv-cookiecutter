@@ -22,6 +22,12 @@ train:
 docker-build:
 	bash docker/build.sh
 
+docker-build-scan:
+	bash docker/build.sh --scan
+
 docker-run:
 	bash docker/run.sh
+
+docker-scan:
+	bash docker/scan.sh
 

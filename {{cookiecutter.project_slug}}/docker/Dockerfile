@@ -18,13 +18,13 @@ RUN apt-get update && \
 
 WORKDIR /opt/app
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml uv.lock README.md ./
 COPY requirements ./requirements
 COPY src ./src
 COPY scripts ./scripts
 COPY configs ./configs
 
-RUN python3 -m pip install --upgrade pip uv && uv sync --frozen --group deploy
+RUN python3 -m pip install --upgrade pip uv && uv sync --frozen --extra deploy
 
 FROM base AS runtime
 CMD ["uv", "run", "python", "scripts/serve.py", "api"]

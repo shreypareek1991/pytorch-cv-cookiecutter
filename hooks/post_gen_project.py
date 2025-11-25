@@ -32,6 +32,23 @@ def maybe_install_dependencies() -> None:
         )
     except (OSError, subprocess.CalledProcessError) as exc:
         print(f"⚠️  uv sync failed: {exc}. Install dependencies manually with `uv sync`.")
+        return
+    
+    # Install pre-commit hooks if dependencies were installed successfully
+    install_pre_commit_hooks()
+
+
+def install_pre_commit_hooks() -> None:
+    """Install pre-commit hooks if pre-commit is available."""
+    try:
+        subprocess.run(
+            ["uv", "run", "pre-commit", "install"],
+            check=True,
+            cwd=PROJECT_DIR,
+        )
+        print("✅ Pre-commit hooks installed successfully!")
+    except (OSError, subprocess.CalledProcessError):
+        print("⚠️  Pre-commit hooks not installed. Run 'make dev' or 'uv run pre-commit install' manually.")
 
 
 def init_git_repo() -> None:
@@ -57,6 +74,7 @@ def warn_on_cuda_on_arm() -> None:
 def print_success_message() -> None:
     """Display success message after project generation."""
     project_name = "{{ cookiecutter.project_name }}"
+    project_slug = "{{ cookiecutter.project_slug }}"
     
     success = f"""
     ╔═══════════════════════════════════════════════════════════╗
@@ -77,22 +95,41 @@ def print_success_message() -> None:
       • Docker files: docker/
       • Tests: tests/
 
-    🚀 Quick Start:
+    🔧 Getting Started:
+      
+      1. Navigate to your project:
+         cd {project_slug}
+      
+      2. Activate the virtual environment:
+         source .venv/bin/activate
+         
+         Or use uv (no activation needed):
+         uv run python scripts/train.py
+      
+      3. Useful commands to try:
+         • make sync              - Sync all dependencies
+         • make dev               - Install pre-commit hooks
+         • make test              - Run tests
+         • make format            - Format code (black, isort, ruff)
+         • make lint              - Lint code (ruff, mypy)
+         • make pre-commit        - Run all pre-commit checks
+         • make docker-build      - Build Docker image
+         • make docker-build-scan - Build and scan Docker image
+         • uv run train_model --help    - See training options
+         • uv run pytest          - Run tests
+         • uv run python scripts/train.py run  - Start training
+
+    📚 Documentation:
+      • README.md - Project overview and setup
+      • docs/docker.md - Docker usage and scanning
+      • docs/mlflow.md - MLflow tracking setup
+      • docs/remote_repo.md - Git remote configuration
+
+    💡 Next Steps:
       1. Review README.md for detailed documentation
       2. Configure your datasets in configs/training.yaml
       3. Set up remote repository (see docs/remote_repo.md)
-      4. Start training: uv run train_model --help
-
-    📚 Documentation:
-      • Docker setup: docs/docker.md
-      • MLflow tracking: docs/mlflow.md
-      • Remote repo: docs/remote_repo.md
-
-    💡 Next Steps:
-      1. Review README.md for environment & Docker instructions
-      2. Configure remotes via docs/remote_repo.md
-      3. Update configs/training.yaml with your datasets
-      4. Run tests: uv run pytest
+      4. Run tests: make test or uv run pytest
       5. Start developing! 🚀
 
     Happy coding! 🎊
@@ -116,6 +153,10 @@ def main() -> None:
     
     print("\n✨ Finalizing setup...\n")
     print_success_message()
+    
+    # Remind about pre-commit if dependencies weren't auto-installed
+    if not INSTALL_DEPS:
+        print("\n💡 Tip: Install pre-commit hooks with 'make dev' or 'uv run pre-commit install'")
 
 
 if __name__ == "__main__":

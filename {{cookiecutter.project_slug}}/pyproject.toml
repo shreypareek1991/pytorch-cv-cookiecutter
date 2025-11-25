@@ -47,6 +47,9 @@ dev = [
   "ruff>=0.5",
   "pre-commit>=3.7",
   "ipykernel>=6.29",
+  "black>=24.4.0",
+  "isort>=5.13.0",
+  "bandit>=1.7.8",
 ]
 deploy = [
   "fastapi>=0.112",
@@ -84,4 +87,35 @@ addopts = ["-q", "--disable-warnings"]
 [tool.coverage.run]
 source = ["src/{{ cookiecutter.python_package }}"]
 branch = true
+
+[tool.black]
+line-length = 100
+target-version = ["py{{ cookiecutter.python_version.replace('.', '') }}"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["{{ cookiecutter.python_package }}"]
+skip_glob = ["*/migrations/*", "*/__pycache__/*"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv", "build", "dist"]
+skips = ["B101"]  # Skip assert_used test
 

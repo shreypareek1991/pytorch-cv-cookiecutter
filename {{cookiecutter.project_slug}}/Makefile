@@ -1,15 +1,16 @@
-.PHONY: sync dev test format lint train docker-build docker-run
+.PHONY: sync dev test format lint train docker-build docker-run pre-commit
 
 sync:
 	uv sync --all-extras
 
-dev:
-	uv run pre-commit install
+dev: pre-commit-install
 
 test:
 	uv run pytest
 
 format:
+	uv run black src scripts tests
+	uv run isort src scripts tests
 	uv run ruff format
 
 lint:
@@ -39,4 +40,10 @@ docker-run:
 
 docker-scan:
 	bash docker/scan.sh
+
+pre-commit:
+	uv run pre-commit run --all-files
+
+pre-commit-install:
+	uv run pre-commit install
 

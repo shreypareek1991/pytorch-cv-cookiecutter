@@ -61,12 +61,19 @@ if trivy image \
     # Check for critical vulnerabilities if fail-on is set
     if [[ -n "${FAIL_ON}" ]]; then
         echo "🔍 Checking for ${FAIL_ON} vulnerabilities..."
-        if trivy image \
+        # Run with --exit-code 1: trivy exits 1 if vulnerabilities found, 0 if none
+        # Temporarily disable set -e to handle exit code manually
+        set +e
+        trivy image \
             --severity "${FAIL_ON}" \
             --format table \
             --exit-code 1 \
             --quiet \
-            "${IMAGE}" 2>/dev/null; then
+            "${IMAGE}" 2>/dev/null
+        TRIVY_EXIT=$?
+        set -e
+        
+        if [[ ${TRIVY_EXIT} -eq 1 ]]; then
             echo "❌ Found ${FAIL_ON} vulnerabilities. Build may fail in CI/CD."
             exit 1
         else

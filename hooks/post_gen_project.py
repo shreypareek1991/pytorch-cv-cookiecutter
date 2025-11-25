@@ -2,6 +2,7 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -137,7 +138,110 @@ def print_success_message() -> None:
     print(success)
 
 
+def show_configuration_summary() -> bool:
+    """Display all selected settings and ask for confirmation."""
+    print("\n" + "="*70)
+    print("📋 PROJECT CONFIGURATION SUMMARY")
+    print("="*70 + "\n")
+    
+    # Collect all settings
+    settings = {
+        "Project Information": {
+            "Project Name": "{{ cookiecutter.project_name }}",
+            "Project Slug": "{{ cookiecutter.project_slug }}",
+            "Description": "{{ cookiecutter.project_description }}",
+            "Python Package": "{{ cookiecutter.python_package }}",
+        },
+        "Author & Organization": {
+            "Full Name": "{{ cookiecutter.full_name }}",
+            "Organization": "{{ cookiecutter.organization }}",
+            "Email": "{{ cookiecutter.email }}",
+        },
+        "Python & Runtime": {
+            "Python Version": "{{ cookiecutter.python_version }}",
+            "Default Device": "{{ cookiecutter.default_device }}",
+        },
+        "Docker Configuration": {
+            "Docker Image": "{{ cookiecutter.docker_image_name }}",
+            "Use CUDA": "{{ cookiecutter.use_cuda_default }}",
+            "CUDA Version": "{{ cookiecutter.cuda_version }}",
+            "Ubuntu Version": "{{ cookiecutter.base_ubuntu_version }}",
+        },
+        "MLflow Tracking": {
+            "Enabled": "{{ cookiecutter.enable_mlflow_tracking }}",
+        },
+        "Setup Options": {
+            "Auto-install Dependencies": "{{ cookiecutter.install_dependencies }}",
+            "Repository Visibility": "{{ cookiecutter.repo_visibility }}",
+        },
+    }
+    
+    # Display settings with explanations
+    explanations = {
+        "Project Name": "Display name for your project",
+        "Project Slug": "URL-friendly name (used in paths and imports)",
+        "Description": "Brief description of your project",
+        "Python Package": "Python package name (used in imports)",
+        "Full Name": "Your name (appears in project metadata)",
+        "Organization": "Your organization/company name",
+        "Email": "Contact email for the project",
+        "Python Version": "Python version to use (affects dependencies and Docker)",
+        "Default Device": "Default compute device (cuda/cpu/mps)",
+        "Docker Image": "Full Docker image name (registry/org/repo:tag)",
+        "Use CUDA": "Whether to use CUDA-enabled Docker base image",
+        "CUDA Version": "CUDA version for GPU support",
+        "Ubuntu Version": "Ubuntu version for Docker base image",
+        "Enabled": "Whether MLflow experiment tracking is enabled",
+        "Backend Store": "MLflow backend database location",
+        "Artifact Root": "MLflow artifact storage location",
+        "Auto-install Dependencies": "Automatically run 'uv sync' after generation",
+        "Repository Visibility": "Git repository visibility (private/public)",
+    }
+    
+    for category, values in settings.items():
+        print(f"📌 {category}:")
+        for key, value in values.items():
+            # Handle conditional values
+            if key == "CUDA Version" and not USE_CUDA:
+                value = "N/A (CPU only)"
+            elif key == "Backend Store" and not ENABLE_MLFLOW:
+                continue
+            elif key == "Artifact Root" and not ENABLE_MLFLOW:
+                continue
+            
+            explanation = explanations.get(key, "")
+            print(f"   • {key:<25} : {value}")
+            if explanation:
+                print(f"     {' ' * 27} ({explanation})")
+        
+        # Add MLflow details if enabled
+        if category == "MLflow Tracking" and ENABLE_MLFLOW:
+            print(f"   • {'Backend Store':<25} : {{ cookiecutter.mlflow_backend_store }}")
+            print(f"     {' ' * 27} (MLflow backend database location)")
+            print(f"   • {'Artifact Root':<25} : {{ cookiecutter.mlflow_artifact_root }}")
+            print(f"     {' ' * 27} (MLflow artifact storage location)")
+        
+        print()
+    
+    print("="*70)
+    
+    # Ask for confirmation
+    while True:
+        response = input("\n❓ Do you want to proceed with these settings? (yes/no): ").strip().lower()
+        if response in ['yes', 'y']:
+            return True
+        elif response in ['no', 'n']:
+            print("\n❌ Project generation cancelled. Please run cookiecutter again to change settings.")
+            return False
+        else:
+            print("⚠️  Please enter 'yes' or 'no'.")
+
+
 def main() -> None:
+    # Show configuration summary and get confirmation
+    if not show_configuration_summary():
+        sys.exit(1)
+    
     print("\n🔧 Setting up your project...\n")
     
     print("📦 Removing MLflow assets (if disabled)...")

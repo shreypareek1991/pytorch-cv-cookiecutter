@@ -22,7 +22,6 @@ RUN apt-get update && \
 
 # Copy project files
 COPY pyproject.toml uv.lock README.md ./
-COPY requirements ./requirements
 COPY src ./src
 COPY scripts ./scripts
 COPY configs ./configs

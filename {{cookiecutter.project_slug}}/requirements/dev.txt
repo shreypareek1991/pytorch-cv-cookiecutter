@@ -1,9 +1,0 @@
-# Generated via `uv pip compile requirements/dev.in -o requirements/dev.txt`
-# Keep this file committed for editors/IDEs that read pip-style manifests.
-pytest>=8.3
-pytest-cov>=5.0
-mypy>=1.11
-ruff>=0.5
-pre-commit>=3.7
-ipykernel>=6.29
-

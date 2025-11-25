@@ -22,8 +22,17 @@ train:
 docker-build:
 	bash docker/build.sh
 
+docker-build-cpu:
+	bash docker/build.sh --cpu
+
+docker-build-cuda:
+	bash docker/build.sh --force-cuda
+
 docker-build-scan:
 	bash docker/build.sh --scan
+
+docker-build-cuda-scan:
+	bash docker/build.sh --force-cuda --scan
 
 docker-run:
 	bash docker/run.sh

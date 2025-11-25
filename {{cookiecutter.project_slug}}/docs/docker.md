@@ -7,16 +7,48 @@
 
 ## Build
 
+### Using Make (Recommended)
+
+```bash
+# Build default image (CUDA on x86, CPU on ARM)
+make docker-build
+
+# Build CPU image explicitly
+make docker-build-cpu
+
+# Build CUDA image (on ARM Mac: builds for linux/amd64, cannot run but can be scanned)
+make docker-build-cuda
+
+# Build and scan in one command
+make docker-build-scan
+
+# Build CUDA image and scan (useful on ARM Macs for vulnerability scanning)
+make docker-build-cuda-scan
+```
+
+### Using Scripts Directly
+
 ```bash
 bash docker/build.sh --target runtime
 ```
 
-Flags:
-
+**Flags:**
 - `--platform linux/amd64` for CUDA base images.
 - `--platform linux/arm64` when building on Apple Silicon with the CPU Dockerfile.
+- `--force-cuda` or `--build-for-scan`: Build CUDA image on ARM Macs for scanning (uses `--platform linux/amd64`). The image cannot run natively but can be scanned with Trivy. Requires Docker buildx (usually pre-installed with Docker Desktop).
+- `--cpu`: Use CPU Dockerfile instead of CUDA.
+- `--scan`: Automatically run Trivy scan after building.
 
 ## Run
+
+### Using Make
+
+```bash
+# Run the container
+make docker-run
+```
+
+### Using Scripts Directly
 
 ```bash
 bash docker/run.sh --gpus all --env-file .env
@@ -45,16 +77,31 @@ brew install trivy
 
 ### Usage
 
-**Scan after building:**
+**Scan after building (using Make):**
+```bash
+# Build and scan default image
+make docker-build-scan
+
+# On ARM Mac: Build CUDA image for scanning (cannot run, but can be scanned)
+make docker-build-cuda-scan
+```
+
+**Scan after building (using scripts):**
 ```bash
 # Build and scan in one command
 bash docker/build.sh --scan
 
-# Or using Makefile
-make docker-build-scan
+# On ARM Mac: Build CUDA image for scanning
+bash docker/build.sh --force-cuda --scan
 ```
 
-**Scan an existing image:**
+**Scan an existing image (using Make):**
+```bash
+# Basic scan
+make docker-scan
+```
+
+**Scan an existing image (using scripts):**
 ```bash
 # Basic scan
 bash docker/scan.sh
@@ -64,9 +111,6 @@ bash docker/scan.sh \
   --image my-image:tag \
   --severity CRITICAL,HIGH,MEDIUM \
   --format table
-
-# Or using Makefile
-make docker-scan
 ```
 
 **Scan options:**
@@ -77,7 +121,25 @@ make docker-scan
 
 **CI/CD Integration:**
 The scan script exits with code 1 if critical vulnerabilities are found, making it suitable for CI/CD pipelines:
+
 ```bash
+# Using Make
+make docker-build-scan || exit 1
+
+# Using scripts
 bash docker/build.sh --scan || exit 1
+```
+
+## Quick Reference: All Make Commands
+
+```bash
+# Docker operations
+make docker-build          # Build default image
+make docker-build-cpu      # Build CPU image
+make docker-build-cuda     # Build CUDA image (cross-platform on ARM)
+make docker-build-scan     # Build and scan default image
+make docker-build-cuda-scan # Build CUDA image and scan (ARM Mac friendly)
+make docker-run            # Run the container
+make docker-scan           # Scan existing image
 ```
 

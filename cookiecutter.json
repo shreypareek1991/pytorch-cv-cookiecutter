@@ -10,7 +10,7 @@
   "python_version": "3.11",
   "docker_image_name": "ghcr.io/{{ cookiecutter.organization.lower().replace(' ', '-') }}/{{ cookiecutter.project_slug }}:latest",
   "use_cuda_default": "y",
-  "cuda_version": "12.1.1",
+  "cuda_version": "12.1.0",
   "base_ubuntu_version": "22.04",
   "enable_mlflow_tracking": "n",
   "install_dependencies": "y",

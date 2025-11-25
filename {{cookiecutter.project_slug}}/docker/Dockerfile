@@ -1,5 +1,5 @@
 {% if cookiecutter.use_cuda_default == "y" -%}
-ARG BASE_IMAGE=nvidia/cuda:{{ cookiecutter.cuda_version }}-cudnn9-runtime-ubuntu{{ cookiecutter.base_ubuntu_version }}
+ARG BASE_IMAGE=nvidia/cuda:{{ cookiecutter.cuda_version }}-cudnn8-runtime-ubuntu{{ cookiecutter.base_ubuntu_version }}
 {% else -%}
 ARG BASE_IMAGE=python:{{ cookiecutter.python_version }}-slim
 {% endif %}

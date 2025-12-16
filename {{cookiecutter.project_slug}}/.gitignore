@@ -22,10 +22,20 @@ artifacts/
 *.dvc
 .dvc/cache
 
-# Science folder (data and models are gitignored via their own .gitignore files)
-science/data/*
+# Science folder - ignore all data and model files
+science/data/raw/*
+science/data/processed/*
+science/data/external/*
+science/data/interim/*
+science/data/output/*
 science/models/*
-!science/data/.gitignore
+
+# But keep README files in data subdirectories
+!science/data/raw/README.md
+!science/data/processed/README.md
+!science/data/external/README.md
+!science/data/interim/README.md
+!science/data/output/README.md
 !science/models/.gitignore
 
 # Editors

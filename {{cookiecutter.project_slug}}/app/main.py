@@ -7,7 +7,6 @@ from typing import Any
 
 import uvicorn
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from {{ cookiecutter.python_package }} import __version__
@@ -80,7 +79,7 @@ async def predict(file: UploadFile = File(...)) -> PredictionResponse:
     try:
         # Save uploaded file temporarily
         temp_path = pathlib.Path(f"/tmp/{file.filename}")
-        with open(temp_path, "wb") as f:
+        with temp_path.open("wb") as f:
             content = await file.read()
             f.write(content)
 
@@ -95,7 +94,7 @@ async def predict(file: UploadFile = File(...)) -> PredictionResponse:
             message="Prediction completed successfully",
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}") from e
 
 
 @app.post("/predict/url", response_model=PredictionResponse)
@@ -112,11 +111,11 @@ async def predict_from_url(image_url: str) -> PredictionResponse:
         HTTPException: If URL is invalid or processing fails.
     """
     try:
-        import urllib.request
+        from urllib import request
 
         # Download image
         temp_path = pathlib.Path("/tmp/downloaded_image.jpg")
-        urllib.request.urlretrieve(image_url, temp_path)
+        request.urlretrieve(image_url, temp_path)
 
         # Run prediction
         prediction = predict_simple(temp_path)
@@ -129,7 +128,7 @@ async def predict_from_url(image_url: str) -> PredictionResponse:
             message="Prediction completed successfully",
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}") from e
 
 
 def run_server(host: str = "0.0.0.0", port: int = 8080, reload: bool = False) -> None:

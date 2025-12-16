@@ -85,6 +85,33 @@ def init_git_repo() -> None:
         print("⚠️  Unable to run `git init`. Initialize git manually.")
 
 
+def ensure_data_directories() -> None:
+    """Ensure all data subdirectories are created."""
+    data_dir = PROJECT_DIR / "science" / "data"
+    subdirs = ["raw", "processed", "external", "interim", "output"]
+    
+    for subdir in subdirs:
+        subdir_path = data_dir / subdir
+        subdir_path.mkdir(parents=True, exist_ok=True)
+        # Ensure README.md exists
+        readme_path = subdir_path / "README.md"
+        if not readme_path.exists():
+            readme_path.write_text(
+                f"# {subdir.capitalize()} Data\n\n"
+                f"This directory contains {subdir} data files.\n\n"
+                "**Note**: All files in this directory are gitignored.\n"
+            )
+    
+    # Ensure main data directory README exists
+    data_readme = data_dir / "README.md"
+    if not data_readme.exists():
+        data_readme.write_text(
+            "# Data Directory\n\n"
+            "This directory contains all data files for the project.\n\n"
+            "**Note**: All data files in subdirectories are gitignored.\n"
+        )
+
+
 def warn_on_cuda_on_arm() -> None:
     if not USE_CUDA:
         return
@@ -282,6 +309,9 @@ def main() -> None:
     
     print("📦 Removing MLflow assets (if disabled)...")
     remove_mlflow_assets()
+    
+    print("📁 Ensuring data directories exist...")
+    ensure_data_directories()
     
     print("📂 Initializing Git repository...")
     init_git_repo()

@@ -1,7 +1,0 @@
-provider: "mlflow"
-enabled: "{{ cookiecutter.enable_mlflow_tracking }}"
-mlflow:
-  tracking_uri: "http://localhost:5000"
-  experiment_name: "{{ cookiecutter.project_name }}-experiments"
-  run_name_template: "{{ cookiecutter.project_slug }}-${oc.env:USER,default}"
-

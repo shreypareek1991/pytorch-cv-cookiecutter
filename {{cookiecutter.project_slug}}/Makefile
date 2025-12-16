@@ -1,4 +1,4 @@
-.PHONY: help sync dev test format lint train docker-build docker-run pre-commit docs docs-serve docs-build
+.PHONY: help sync dev test format lint app docker pre-commit docs
 
 .DEFAULT_GOAL := help
 
@@ -15,21 +15,22 @@ help: ## Show this help message
 	@echo "  make test              Run tests (pytest)"
 	@echo "  make pre-commit        Run all pre-commit checks manually"
 	@echo ""
-	@echo "Training:"
-	@echo "  make train             Run training script"
+	@echo "API Application:"
+	@echo "  make app               Run FastAPI application (development)"
+	@echo "  make app serve         Run FastAPI application (development)"
 	@echo ""
 	@echo "Docker:"
-	@echo "  make docker-build      Build Docker image (auto-switches to CPU on ARM)"
-	@echo "  make docker-build-cpu  Build CPU-only image"
-	@echo "  make docker-build-cuda Build CUDA image (x86_64 Linux only)"
-	@echo "  make docker-build-scan Build and scan Docker image"
-	@echo "  make docker-run        Run Docker container"
-	@echo "  make docker-scan       Scan existing Docker image"
+	@echo "  make docker build      Build Docker image (auto-switches to CPU on ARM)"
+	@echo "  make docker build-cpu  Build CPU-only image"
+	@echo "  make docker build-cuda Build CUDA image (x86_64 Linux only)"
+	@echo "  make docker build-scan Build and scan Docker image"
+	@echo "  make docker run        Run Docker container"
+	@echo "  make docker scan       Scan existing Docker image"
 	@echo ""
 	@echo "Documentation:"
 	@echo "  make docs              Serve documentation website (default)"
-	@echo "  make docs-serve        Serve documentation website"
-	@echo "  make docs-build        Build static documentation site"
+	@echo "  make docs serve        Serve documentation website"
+	@echo "  make docs build        Build static documentation site"
 	@echo ""
 	@echo "For more information, see README.md or docs/"
 
@@ -42,16 +43,27 @@ test: ## Run tests
 	uv run pytest
 
 format: ## Format code (black, isort, ruff)
-	uv run black src scripts tests
-	uv run isort src scripts tests
-	uv run ruff format
+	uv run black {{ cookiecutter.python_package }} app tests science
+	uv run isort {{ cookiecutter.python_package }} app tests
+	uv run ruff format {{ cookiecutter.python_package }} app tests
 
 lint: ## Lint code (ruff, mypy)
-	uv run ruff check
-	uv run mypy src
+	uv run ruff check {{ cookiecutter.python_package }} app tests
+	uv run mypy {{ cookiecutter.python_package }} app
 
-train: ## Run training script
-	uv run python scripts/train.py run
+app: app-serve ## Run FastAPI application (development)
+
+app-serve: ## Run FastAPI application (development)
+	uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+
+docker: ## Docker commands (use: make docker build, make docker run, etc.)
+	@echo "Available docker commands:"
+	@echo "  make docker build      Build Docker image"
+	@echo "  make docker build-cpu  Build CPU-only image"
+	@echo "  make docker build-cuda Build CUDA image"
+	@echo "  make docker build-scan Build and scan Docker image"
+	@echo "  make docker run        Run Docker container"
+	@echo "  make docker scan       Scan existing Docker image"
 
 docker-build: ## Build Docker image (auto-switches to CPU on ARM)
 	bash docker/build.sh
@@ -77,8 +89,7 @@ pre-commit: ## Run all pre-commit checks manually
 pre-commit-install: ## Install pre-commit hooks
 	uv run pre-commit install
 
-docs: ## Serve documentation website (default)
-	uv run mkdocs serve
+docs: docs-serve ## Serve documentation website (default)
 
 docs-serve: ## Serve documentation website
 	uv run mkdocs serve

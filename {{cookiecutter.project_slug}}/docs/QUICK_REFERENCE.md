@@ -25,7 +25,7 @@ uv lock
 ## Development Commands
 
 ```bash
-# Format code
+# Format code (including science folder)
 make format
 
 # Lint code
@@ -41,20 +41,19 @@ make dev
 make pre-commit
 ```
 
-## Training Commands
+## API Application Commands
 
 ```bash
-# Basic training
-uv run python scripts/train.py
+# Run FastAPI application (development)
+make app
+# or
+make app serve
 
-# With custom config
-uv run python scripts/train.py --config configs/training.yaml
+# Using uvicorn directly
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
 
-# Export model
-uv run python scripts/export.py --checkpoint model.ckpt --format onnx
-
-# Start inference server
-uv run python scripts/serve.py --model model.pt
+# Production mode
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 4
 ```
 
 ## Documentation Commands
@@ -62,9 +61,11 @@ uv run python scripts/serve.py --model model.pt
 ```bash
 # Serve documentation website
 make docs
+# or
+make docs serve
 
 # Build documentation
-make docs-build
+make docs build
 
 # Or using mkdocs directly
 uv run mkdocs serve
@@ -74,20 +75,23 @@ uv run mkdocs build
 ## Docker Commands
 
 ```bash
-# Build image
-make docker-build
+# Build image (auto-switches to CPU on ARM)
+make docker build
 
 # Build CPU image
-make docker-build-cpu
+make docker build-cpu
+
+# Build CUDA image (x86_64 Linux only)
+make docker build-cuda
 
 # Build and scan
-make docker-build-scan
+make docker build-scan
 
 # Run container
-make docker-run
+make docker run
 
 # Scan image
-make docker-scan
+make docker scan
 ```
 
 ## Testing Commands
@@ -97,32 +101,32 @@ make docker-scan
 uv run pytest
 
 # Run specific test file
-uv run pytest tests/test_model.py
+uv run pytest tests/test_imports.py
 
 # Run with coverage
-uv run pytest --cov=src
+uv run pytest --cov={{ cookiecutter.python_package }} --cov=app
 
 # Run specific test
-uv run pytest tests/test_model.py::test_function
+uv run pytest tests/test_imports.py::test_package_import
 ```
 
 ## Code Quality Commands
 
 ```bash
-# Format with black
-uv run black src/
+# Format with black (including science folder)
+uv run black {{ cookiecutter.python_package }} app tests science
 
-# Sort imports
-uv run isort src/
+# Sort imports (excludes science folder)
+uv run isort {{ cookiecutter.python_package }} app tests
 
-# Lint with ruff
-uv run ruff check src/
+# Lint with ruff (excludes science folder)
+uv run ruff check {{ cookiecutter.python_package }} app tests
 
-# Type check
-uv run mypy src/
+# Type check (excludes science folder)
+uv run mypy {{ cookiecutter.python_package }} app
 
-# Security scan
-uv run bandit -r src/
+# Security scan (excludes science folder)
+uv run bandit -r {{ cookiecutter.python_package }}/,app/
 ```
 
 ## Git Commands
@@ -145,19 +149,25 @@ git commit -m "message"
 
 ```
 .
-├── configs/          # Configuration files
-├── docker/           # Docker files
-├── docs/             # Documentation
-├── scripts/          # Entrypoint scripts
-├── src/              # Source code
-└── tests/            # Test files
+├── {{ cookiecutter.python_package }}/    # Main Python package
+│   ├── vision.py         # Computer vision utilities
+│   └── utils/            # Utility functions
+├── app/                  # FastAPI application
+│   ├── main.py          # API routes and server
+│   └── README.md        # API documentation
+├── science/              # Data science work
+│   ├── data/            # Data files (gitignored)
+│   ├── models/          # Trained models (gitignored)
+│   └── notebooks/       # Jupyter notebooks
+├── configs/              # Configuration files
+├── docker/               # Docker files
+├── docs/                 # Documentation
+└── tests/                # Test files
 ```
 
 ## Configuration Files
 
-- `configs/training.yaml` - Training configuration
-- `configs/model.yaml` - Model configuration
-- `configs/deployment.yaml` - Deployment configuration
+- `configs/deployment.yaml` - API deployment configuration
 - `.env` - Environment variables (copy from `.env.example`)
 - `pyproject.toml` - Project configuration
 
@@ -183,30 +193,35 @@ make test
 git commit -m "feat: add new feature"
 ```
 
-### Running training
+### Running the API
 
 ```bash
-# 1. Configure training
-# Edit configs/training.yaml
+# 1. Start the API server
+make app
 
-# 2. Start training
-uv run python scripts/train.py
+# 2. Test the API
+# Open http://localhost:8080/docs in browser
+# Or use curl:
+curl http://localhost:8080/health
 
-# 3. Monitor (if MLflow enabled)
-# Open http://localhost:5000
+# 3. Make a prediction
+curl -X POST "http://localhost:8080/predict" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@path/to/image.jpg"
 ```
 
-### Deploying model
+### Deploying with Docker
 
 ```bash
-# 1. Export model
-uv run python scripts/export.py --checkpoint model.ckpt --format onnx
+# 1. Build Docker image
+make docker build
 
-# 2. Build Docker image
-make docker-build
+# 2. Run container
+make docker run
 
-# 3. Run container
-make docker-run
+# 3. Test API
+curl http://localhost:8080/health
 ```
 
 ## Make Targets
@@ -218,18 +233,23 @@ make test              # Run tests
 make format            # Format code
 make lint              # Lint code
 make pre-commit        # Run pre-commit checks
-make docker-build      # Build Docker image
-make docker-build-cpu  # Build CPU image
-make docker-build-scan # Build and scan
-make docker-run        # Run container
-make docker-scan       # Scan image
+make app               # Run FastAPI application
+make docker build      # Build Docker image
+make docker build-cpu  # Build CPU image
+make docker build-cuda # Build CUDA image
+make docker build-scan # Build and scan
+make docker run        # Run container
+make docker scan       # Scan image
+make docs              # Serve documentation
+make docs build        # Build documentation
 ```
 
 ## Environment Variables
 
 Common environment variables (set in `.env`):
 
-- `MLFLOW_TRACKING_URI` - MLflow server URI
+- `API_HOST` - API host (default: 0.0.0.0)
+- `API_PORT` - API port (default: 8080)
 - `CUDA_VISIBLE_DEVICES` - GPU selection
 - `PYTHONPATH` - Python path (usually not needed)
 
@@ -237,7 +257,6 @@ Common environment variables (set in `.env`):
 
 - [Getting Started](GETTING_STARTED.md) - Setup and installation
 - [Development Guide](DEVELOPMENT.md) - Development workflow
-- [Training Guide](TRAINING.md) - Model training
+- [API Documentation](../app/README.md) - FastAPI application guide
 - [Docker Guide](docker.md) - Docker usage
 - [Troubleshooting](TROUBLESHOOTING.md) - Common issues
-

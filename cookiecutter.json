@@ -13,6 +13,7 @@
   "cuda_version": "12.1.0",
   "base_ubuntu_version": "22.04",
   "enable_mlflow_tracking": "n",
+  "enable_dvc": "n",
   "install_dependencies": "y",
   "default_device": "cuda",
   "mlflow_backend_store": "mlruns",

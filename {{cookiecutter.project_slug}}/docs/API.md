@@ -1,130 +1,210 @@
 # API Reference
 
-This page documents the API for {{ cookiecutter.project_name }}.
+This document provides API reference for the {{ cookiecutter.project_name }} project.
 
-## Training API
+## FastAPI Application
 
-### `scripts.train`
+The main API application is located in `app/main.py` and provides REST endpoints for computer vision tasks.
 
-Main training script for model training.
-
-```python
-from scripts.train import app
-
-# Run training
-app.run()
-```
-
-**Command Line Usage:**
+### Running the API
 
 ```bash
-uv run python scripts/train.py run
-uv run python scripts/train.py --config configs/training.yaml
+# Development mode
+make app
+
+# Or using uvicorn directly
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+
+# Production mode
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8080 --workers 4
 ```
 
-**Options:**
+### API Endpoints
 
-- `--config`: Path to training configuration file
-- `--device`: Device to use (cuda/cpu/mps)
-- `--epochs`: Number of training epochs
-- `--batch-size`: Batch size for training
+#### `GET /`
+Root endpoint with API information.
 
-## Export API
+**Response:**
+```json
+{
+  "name": "{{ cookiecutter.project_name }}",
+  "description": "{{ cookiecutter.project_description }}",
+  "version": "0.1.0",
+  "docs": "/docs",
+  "redoc": "/redoc"
+}
+```
 
-### `scripts.export`
+#### `GET /health`
+Health check endpoint.
 
-Model export utilities for deployment.
+**Response:**
+```json
+{
+  "status": "healthy",
+  "version": "0.1.0"
+}
+```
 
+#### `POST /predict`
+Upload an image file and get predictions.
+
+**Request:**
+- Content-Type: `multipart/form-data`
+- Body: Image file (JPEG, PNG, etc.)
+
+**Response:**
+```json
+{
+  "prediction": {
+    "image_shape": [224, 224, 3],
+    "processed_shape": [1, 3, 224, 224],
+    "prediction": "placeholder",
+    "confidence": 0.0
+  },
+  "message": "Prediction completed successfully"
+}
+```
+
+#### `POST /predict/url`
+Predict from an image URL.
+
+**Request:**
+- Content-Type: `application/json`
+- Body:
+```json
+{
+  "image_url": "https://example.com/image.jpg"
+}
+```
+
+**Response:**
+Same as `/predict` endpoint.
+
+### OpenAPI Documentation
+
+The API includes automatic OpenAPI/Swagger documentation:
+
+- **Swagger UI**: http://localhost:8080/docs
+- **ReDoc**: http://localhost:8080/redoc
+- **OpenAPI Schema**: http://localhost:8080/openapi.json
+
+## Python Package API
+
+### Vision Module
+
+The `{{ cookiecutter.python_package }}.vision` module provides computer vision utilities.
+
+#### `load_image(image_path: str | pathlib.Path) -> np.ndarray`
+
+Load an image from file path.
+
+**Parameters:**
+- `image_path`: Path to the image file
+
+**Returns:**
+- Image as numpy array in RGB format
+
+**Example:**
 ```python
-from scripts.export import app
+from {{ cookiecutter.python_package }}.vision import load_image
 
-# Export model
-app.run()
+image = load_image("path/to/image.jpg")
 ```
 
-**Command Line Usage:**
+#### `preprocess_image(image: np.ndarray, size: tuple[int, int] = (224, 224)) -> torch.Tensor`
 
-```bash
-uv run python scripts/export.py \
-    --checkpoint model.ckpt \
-    --format onnx \
-    --output model.onnx
-```
+Preprocess image for model inference.
 
-**Options:**
+**Parameters:**
+- `image`: Image as numpy array (H, W, C) in RGB format
+- `size`: Target size (height, width), default (224, 224)
 
-- `--checkpoint`: Path to model checkpoint
-- `--format`: Export format (onnx, torchscript)
-- `--output`: Output file path
-- `--input-shape`: Input tensor shape
+**Returns:**
+- Preprocessed image as torch tensor (1, C, H, W) normalized to [0, 1]
 
-## Serving API
-
-### `scripts.serve`
-
-FastAPI inference server.
-
+**Example:**
 ```python
-from scripts.serve import app
+from {{ cookiecutter.python_package }}.vision import preprocess_image
 
-# Start server
-app.run()
+tensor = preprocess_image(image, size=(224, 224))
 ```
 
-**Command Line Usage:**
+#### `predict_simple(image_path: str | pathlib.Path) -> dict[str, Any]`
 
-```bash
-uv run python scripts/serve.py --model model.pt
-uv run python scripts/serve.py --model model.pt --port 8000
-```
+Simple example prediction function.
 
-**REST API Endpoints:**
+**Parameters:**
+- `image_path`: Path to the image file
 
-- `POST /predict` - Run inference
-  - Request body: JSON with input data
-  - Response: JSON with predictions
+**Returns:**
+- Dictionary with prediction results
 
-- `GET /health` - Health check
-  - Response: `{"status": "healthy"}`
-
-- `GET /docs` - API documentation (Swagger UI)
-
-## Source Code API
-
-### Data Module
-
+**Example:**
 ```python
-from {{ cookiecutter.python_package }}.data import DataModule
+from {{ cookiecutter.python_package }}.vision import predict_simple
 
-# Create data module
-data_module = DataModule(config)
+result = predict_simple("path/to/image.jpg")
 ```
 
-### Training Module
+### Utils Module
 
+The `{{ cookiecutter.python_package }}.utils` module provides utility functions.
+
+#### `save_state(state: Mapping[str, Any], directory: pathlib.Path, prefix: str = "checkpoint") -> pathlib.Path`
+
+Save a state dictionary to a checkpoint file.
+
+**Parameters:**
+- `state`: State dictionary to save
+- `directory`: Directory to save checkpoint in
+- `prefix`: Filename prefix, default "checkpoint"
+
+**Returns:**
+- Path to saved checkpoint file
+
+**Example:**
 ```python
-from {{ cookiecutter.python_package }}.training import Trainer
+from {{ cookiecutter.python_package }}.utils import save_state
+import pathlib
 
-# Create trainer
-trainer = Trainer(config)
+checkpoint_path = save_state(
+    {"model": model.state_dict(), "epoch": 10},
+    pathlib.Path("science/models"),
+    prefix="model"
+)
 ```
 
-### Deployment Module
+#### `load_state(path: pathlib.Path) -> Mapping[str, Any]`
 
+Load a state dictionary from a checkpoint file.
+
+**Parameters:**
+- `path`: Path to checkpoint file
+
+**Returns:**
+- State dictionary
+
+**Raises:**
+- `FileNotFoundError`: If checkpoint file doesn't exist
+
+**Example:**
 ```python
-from {{ cookiecutter.python_package }}.deployment import ModelServer
+from {{ cookiecutter.python_package }}.utils import load_state
+import pathlib
 
-# Create model server
-server = ModelServer(model_path)
+state = load_state(pathlib.Path("science/models/model-checkpoint-20240101-120000.pt"))
 ```
 
 ## Configuration
 
-All APIs use configuration files in `configs/`:
+API configuration is managed through:
 
-- `configs/training.yaml` - Training configuration
-- `configs/model.yaml` - Model configuration
-- `configs/deployment.yaml` - Deployment configuration
+- `configs/deployment.yaml` - Server configuration (host, port, workers, etc.)
+- Environment variables - Can override config values
 
-See individual configuration files for detailed options.
+## See Also
 
+- [API Application Guide](../app/README.md) - Detailed guide for using the FastAPI application
+- [Getting Started](GETTING_STARTED.md) - Setup and installation
+- [Development Guide](DEVELOPMENT.md) - Development workflow

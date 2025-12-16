@@ -96,33 +96,26 @@ See [uv installation guide](https://docs.astral.sh/uv/) for more options.
 - Sync dependencies: `uv sync`
 - Check if package is in correct extra: `uv sync --extra dev`
 
-## Training Issues
+## API Issues
 
-### Out of memory (OOM)
+### API not starting
 
-**Error**: `RuntimeError: CUDA out of memory`
-
-**Solutions**:
-- Reduce batch size in config
-- Use gradient accumulation
-- Use CPU: `--device cpu` (slower but works)
-- Use mixed precision training
-
-### Model not training
-
-**Checklist**:
-- Verify data loading: Check data paths in config
-- Check device: Ensure model and data are on same device
-- Verify loss: Check if loss is decreasing
-- Check learning rate: May be too high/low
-
-### Slow training
+**Error**: `Address already in use` or port conflicts
 
 **Solutions**:
-- Use GPU if available: `--device cuda`
-- Increase batch size (if memory allows)
-- Use mixed precision training
-- Profile code to find bottlenecks
+- Check if port 8080 is in use: `lsof -i :8080`
+- Change port in `app/main.py` or use environment variable
+- Kill process using the port: `kill -9 <PID>`
+
+### API requests failing
+
+**Error**: `500 Internal Server Error` or prediction errors
+
+**Solutions**:
+- Check API logs for detailed error messages
+- Verify image file format (JPEG, PNG supported)
+- Check that vision utilities are working: `make test`
+- Verify model files are in `science/models/` if using custom models
 
 ## Git Issues
 
@@ -163,7 +156,7 @@ See [uv installation guide](https://docs.astral.sh/uv/) for more options.
 - Ensure MLflow is installed: `uv sync --extra ml`
 - Check logs for errors
 {% else %}
-MLflow is not enabled. See [Training Guide](TRAINING.md) to enable it.
+MLflow is not enabled. You can enable it by configuring MLflow in your project.
 {% endif %}
 
 ## Getting Help

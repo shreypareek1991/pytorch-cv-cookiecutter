@@ -20,46 +20,50 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
 
-  # Black code formatter
+  # Black code formatter (including science folder for formatting)
   - repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
       - id: black
         language_version: python{{ cookiecutter.python_version }}
         args: ['--line-length=100']
+        # Allow black to format science folder, but other hooks will skip it
 
-  # isort import sorter
+  # isort import sorter (exclude science folder)
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
       - id: isort
         args: ['--profile=black', '--line-length=100']
+        exclude: ^science/
 
-  # Ruff linter and formatter (runs after black/isort for additional checks)
+  # Ruff linter and formatter (exclude science folder)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.5.1
     hooks:
       - id: ruff
         args: ['--fix', '--exit-non-zero-on-fix']
+        exclude: ^science/
       - id: ruff-format
+        exclude: ^science/
         # Ruff format runs but black takes precedence for consistency
 
-  # MyPy type checker
+  # MyPy type checker (exclude science folder and tests)
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.11.1
     hooks:
       - id: mypy
         additional_dependencies: [types-all]
         args: ['--ignore-missing-imports', '--no-strict-optional']
-        exclude: ^(tests/|scripts/)
+        exclude: ^(tests/|science/)
 
-  # Security checks with bandit
+  # Security checks with bandit (exclude science folder)
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.8
     hooks:
       - id: bandit
-        args: ['-r', 'src/', '-ll']  # Low/Medium severity, skip high for now
-        exclude: ^tests/
+        args: ['-r', '{{ cookiecutter.python_package }}/,app/', '-ll']  # Low/Medium severity, skip high for now
+        exclude: ^(tests/|science/)
 
   # Run tests (only on pre-push to avoid slowing down commits)
   - repo: local

@@ -8,4 +8,3 @@ try:
     __version__ = _metadata.version("{{ cookiecutter.project_slug }}")
 except _metadata.PackageNotFoundError:  # pragma: no cover - during local dev
     __version__ = "0.0.0"
-

@@ -2,7 +2,7 @@
 
 {{ cookiecutter.project_description }}
 
-A production-ready computer vision project powered by PyTorch, featuring modern tooling for development, training, and deployment.
+A production-ready computer vision project powered by PyTorch, featuring modern tooling for development and API deployment.
 
 ## 🚀 Quick Start
 
@@ -10,12 +10,17 @@ A production-ready computer vision project powered by PyTorch, featuring modern 
 # Navigate to project directory
 cd {{ cookiecutter.project_slug }}
 
-# Activate virtual environment
-source .venv/bin/activate
+# Sync dependencies
+make sync
 
-# Or use uv directly (no activation needed)
-uv run python scripts/train.py --help
+# Run the API application
+make app
 ```
+
+The API will be available at:
+- **API**: http://localhost:8080
+- **Swagger UI**: http://localhost:8080/docs
+- **ReDoc**: http://localhost:8080/redoc
 
 ## 📚 Documentation
 
@@ -36,11 +41,10 @@ Then open http://127.0.0.1:8000 in your browser.
 
 - **[Getting Started](docs/GETTING_STARTED.md)** - Installation, prerequisites, and environment setup
 - **[Development Guide](docs/DEVELOPMENT.md)** - Code quality, testing, and development workflow
-- **[Training & Deployment](docs/TRAINING.md)** - Model training, export, and serving
+- **[API Documentation](app/README.md)** - FastAPI application guide and usage
 - **[Docker Guide](docs/docker.md)** - Docker usage, building, and vulnerability scanning
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
 - **[Quick Reference](docs/QUICK_REFERENCE.md)** - Common commands and tasks
-
 {% if cookiecutter.enable_mlflow_tracking == "y" or cookiecutter.enable_mlflow_tracking == "yes" %}
 - **[MLflow Tracking](docs/mlflow.md)** - Experiment tracking setup
 {% endif %}
@@ -50,16 +54,21 @@ Then open http://127.0.0.1:8000 in your browser.
 
 ```
 .
-├── configs/                # Hydra/YAML configs for training & deployment
-├── docker/                 # Dockerfiles, build & run scripts, OS package lists
-├── docs/                   # Documentation files
-├── scripts/                # Entrypoints for training/inference/utilities
-├── src/{{ cookiecutter.python_package }}/
-│   ├── data/               # Dataset + datamodule helpers
-│   ├── training/           # Lightning/Trainer orchestration
-│   ├── deployment/         # Serving utilities / export logic
-│   └── utils/              # Shared helpers (metrics, transforms, etc.)
-└── tests/                  # Pytest-based smoke & regression tests
+├── {{ cookiecutter.python_package }}/    # Main Python package
+│   ├── vision.py         # Computer vision utilities
+│   └── utils/            # Utility functions
+├── app/                  # FastAPI application
+│   ├── main.py          # API routes and server
+│   └── README.md        # API documentation
+├── science/              # Data science work
+│   ├── data/            # Data files (gitignored)
+│   ├── models/          # Trained models (gitignored)
+│   └── notebooks/       # Jupyter notebooks
+├── configs/              # Configuration files
+├── docker/               # Dockerfiles and scripts
+├── docs/                 # Documentation files
+├── tests/                # Test files
+└── pyproject.toml        # Project configuration
 ```
 
 ## 🎯 Overview
@@ -67,9 +76,9 @@ Then open http://127.0.0.1:8000 in your browser.
 This project provides a complete framework for computer vision tasks with:
 
 - **PyTorch** for deep learning models
+- **FastAPI** for REST API with OpenAPI/Swagger documentation
 - **uv** for fast, reliable dependency management
 - **Docker** support for both CUDA and CPU deployments
-- **MLflow** integration for experiment tracking (optional)
 - **Pre-commit hooks** for code quality
 - **Comprehensive testing** with pytest
 
@@ -81,8 +90,9 @@ make dev               # Install pre-commit hooks
 make test              # Run tests
 make format            # Format code
 make lint              # Lint code
-make docker-build      # Build Docker image
-make docs               # Serve documentation website
+make app               # Run FastAPI application
+make docker build      # Build Docker image
+make docs              # Serve documentation website
 ```
 
 See [Quick Reference](docs/QUICK_REFERENCE.md) for all available commands.
@@ -91,7 +101,7 @@ See [Quick Reference](docs/QUICK_REFERENCE.md) for all available commands.
 
 1. Read [Getting Started](docs/GETTING_STARTED.md) for installation
 2. Review [Development Guide](docs/DEVELOPMENT.md) for workflow
-3. Check [Training Guide](docs/TRAINING.md) to start training models
+3. Check [API Documentation](app/README.md) to understand the API
 4. Set up remote repository (see [Remote Repo Guide](docs/remote_repo.md))
 
 ## 📝 Project Information

@@ -8,6 +8,7 @@ from pathlib import Path
 
 PROJECT_DIR = Path.cwd()
 ENABLE_MLFLOW = "{{ cookiecutter.enable_mlflow_tracking }}".lower().startswith("y")
+ENABLE_DVC = "{{ cookiecutter.enable_dvc }}".lower().startswith("y")
 INSTALL_DEPS = "{{ cookiecutter.install_dependencies }}".lower().startswith("y")
 USE_CUDA = "{{ cookiecutter.use_cuda_default }}".lower().startswith("y")
 
@@ -19,6 +20,28 @@ def remove_mlflow_assets() -> None:
     mlflow_doc = PROJECT_DIR / "docs" / "mlflow.md"
     if mlflow_doc.exists():
         mlflow_doc.unlink()
+
+
+def init_dvc() -> None:
+    """Initialize DVC if enabled."""
+    if not ENABLE_DVC:
+        return
+    
+    try:
+        # Check if DVC is installed
+        subprocess.run(["dvc", "--version"], check=True, capture_output=True)
+        
+        # Initialize DVC
+        subprocess.run(["dvc", "init"], check=True, cwd=PROJECT_DIR)
+        print("✅ DVC initialized successfully!")
+        print("💡 Next steps:")
+        print("   1. Configure remote storage: dvc remote add -d myremote <storage-url>")
+        print("   2. Add data to track: dvc add science/data/raw/")
+        print("   3. Commit .dvc files: git add .dvc science/data/raw.dvc")
+    except (OSError, subprocess.CalledProcessError):
+        print("⚠️  DVC not installed or initialization failed.")
+        print("   Install DVC with: uv sync --extra dvc")
+        print("   Then run: dvc init")
 
 
 def maybe_install_dependencies() -> None:
@@ -178,6 +201,12 @@ def show_configuration_summary() -> bool:
         },
     }
     
+    # Add DVC section if enabled
+    if ENABLE_DVC:
+        settings["Data Versioning"] = {
+            "DVC Enabled": "{{ cookiecutter.enable_dvc }}",
+        }
+    
     # Display settings with explanations
     explanations = {
         "Project Name": "Display name for your project",
@@ -196,9 +225,9 @@ def show_configuration_summary() -> bool:
         "Enabled": "Whether MLflow experiment tracking is enabled",
         "Backend Store": "MLflow backend database location",
         "Artifact Root": "MLflow artifact storage location",
-        "Auto-install Dependencies": "Automatically run 'uv sync' after generation",
-        "Repository Visibility": "Git repository visibility (private/public)",
-    }
+            "Auto-install Dependencies": "Automatically run 'uv sync' after generation",
+            "Repository Visibility": "Git repository visibility (private/public)",
+        }
     
     for category, values in settings.items():
         print(f"📌 {category}:")
@@ -222,6 +251,11 @@ def show_configuration_summary() -> bool:
             print(f"     {' ' * 27} (MLflow backend database location)")
             print(f"   • {'Artifact Root':<25} : {{ cookiecutter.mlflow_artifact_root }}")
             print(f"     {' ' * 27} (MLflow artifact storage location)")
+        
+        # Add DVC details if enabled
+        if category == "Data Versioning" and ENABLE_DVC:
+            print(f"   • {'DVC Enabled':<25} : Yes")
+            print(f"     {' ' * 27} (Data Version Control for tracking datasets)")
         
         print()
     
@@ -251,6 +285,10 @@ def main() -> None:
     
     print("📂 Initializing Git repository...")
     init_git_repo()
+    
+    if ENABLE_DVC:
+        print("📊 Initializing DVC...")
+        init_dvc()
     
     warn_on_cuda_on_arm()
     

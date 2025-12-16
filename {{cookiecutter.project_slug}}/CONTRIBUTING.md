@@ -172,18 +172,18 @@ make lint    # Lint and type check
 
 ```
 .
-├── src/{{ cookiecutter.python_package }}/  # Main source code
-│   ├── training/          # Training code
-│   ├── deployment/        # Deployment/service code
-│   └── utils/             # Utility functions
-├── scripts/               # Entrypoint scripts
-│   ├── train.py          # Training script
-│   ├── export.py         # Model export script
-│   └── serve.py          # Model serving script
+├── {{ cookiecutter.python_package }}/    # Main Python package
+│   ├── vision.py         # Computer vision utilities
+│   └── utils/            # Utility functions
+├── app/                  # FastAPI application
+│   ├── main.py          # API routes and server
+│   └── README.md        # API documentation
+├── science/              # Data science work
+│   ├── data/            # Data files (gitignored)
+│   ├── models/          # Trained models (gitignored)
+│   └── notebooks/       # Jupyter notebooks
 ├── configs/               # Configuration files
-│   ├── training.yaml     # Training configuration
-│   ├── deployment.yaml   # Deployment configuration
-│   └── tracking.yaml     # MLflow tracking config
+│   └── deployment.yaml   # Deployment configuration
 ├── docker/                # Docker files
 │   ├── Dockerfile        # CUDA Dockerfile
 │   ├── Dockerfile.cpu    # CPU Dockerfile

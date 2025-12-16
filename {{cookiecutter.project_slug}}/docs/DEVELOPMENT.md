@@ -28,13 +28,15 @@ make pre-commit  # Run all pre-commit checks manually
 
 The following hooks are configured:
 
-- **Black**: Code formatting
-- **isort**: Import sorting (black-compatible)
-- **Ruff**: Fast linting and formatting
-- **MyPy**: Type checking
-- **Bandit**: Security vulnerability scanning
+- **Black**: Code formatting (includes science folder)
+- **isort**: Import sorting (black-compatible, excludes science folder)
+- **Ruff**: Fast linting and formatting (excludes science folder)
+- **MyPy**: Type checking (excludes science folder)
+- **Bandit**: Security vulnerability scanning (excludes science folder)
 - **Pytest**: Runs tests on pre-push
 - **File checks**: Trailing whitespace, YAML/TOML/JSON validation, etc.
+
+**Note**: The `science/` folder is excluded from most pre-commit hooks (except black formatting) to allow flexibility for data science work. However, it's recommended to format notebooks and Python files in the science folder using black.
 
 ### Usage
 
@@ -62,13 +64,13 @@ make test
 uv run pytest
 
 # Run specific test file
-uv run pytest tests/test_model.py
+uv run pytest tests/test_imports.py
 
 # Run with coverage
-uv run pytest --cov=src
+uv run pytest --cov={{ cookiecutter.python_package }} --cov=app
 
 # Run specific test
-uv run pytest tests/test_model.py::test_specific_function
+uv run pytest tests/test_imports.py::test_package_import
 ```
 
 ### Writing Tests
@@ -80,10 +82,10 @@ uv run pytest tests/test_model.py::test_specific_function
 
 Example:
 ```python
-def test_model_forward():
-    model = MyModel()
-    output = model(input_tensor)
-    assert output.shape == expected_shape
+def test_vision_utils():
+    from {{ cookiecutter.python_package }}.vision import load_image
+    # Test implementation
+    assert True
 ```
 
 ## Code Formatting
@@ -91,22 +93,22 @@ def test_model_forward():
 ### Format Code
 
 ```bash
-# Format all code
+# Format all code (including science folder)
 make format
 
 # Format specific files
-uv run black src/
-uv run isort src/
-uv run ruff format src/
+uv run black {{ cookiecutter.python_package }} app tests science
+uv run isort {{ cookiecutter.python_package }} app tests
+uv run ruff format {{ cookiecutter.python_package }} app tests
 ```
 
 ### Check Formatting
 
 ```bash
 # Check without making changes
-uv run black --check .
-uv run isort --check-only .
-uv run ruff check .
+uv run black --check {{ cookiecutter.python_package }} app tests
+uv run isort --check-only {{ cookiecutter.python_package }} app tests
+uv run ruff check {{ cookiecutter.python_package }} app tests
 ```
 
 ## Linting
@@ -118,9 +120,9 @@ uv run ruff check .
 make lint
 
 # Individual tools
-uv run ruff check .        # Fast linting
-uv run mypy src/          # Type checking
-uv run bandit -r src/     # Security scanning
+uv run ruff check {{ cookiecutter.python_package }} app tests        # Fast linting
+uv run mypy {{ cookiecutter.python_package }} app          # Type checking
+uv run bandit -r {{ cookiecutter.python_package }}/,app/     # Security scanning
 ```
 
 ### Fix Linting Issues
@@ -129,10 +131,10 @@ Many linting issues can be auto-fixed:
 
 ```bash
 # Auto-fix ruff issues
-uv run ruff check --fix .
+uv run ruff check --fix {{ cookiecutter.python_package }} app tests
 
 # Format with ruff
-uv run ruff format .
+uv run ruff format {{ cookiecutter.python_package }} app tests
 ```
 
 ## Adding Dependencies
@@ -157,90 +159,107 @@ uv add --dev package-name
 uv add --extra deploy package-name
 ```
 
-### Updating Dependencies
+### Update Dependencies
 
 ```bash
-# Update lockfile
-uv lock
+# Update all dependencies
+uv lock --upgrade
 
 # Update specific package
-uv add --upgrade package-name
-```
-
-## Git Workflow
-
-### Pre-commit Checks
-
-Before committing, ensure:
-
-1. Code is formatted: `make format`
-2. Tests pass: `make test`
-3. Linting passes: `make lint`
-
-Or let pre-commit hooks handle it automatically.
-
-### Commit Messages
-
-Follow conventional commit format:
-
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation
-- `refactor:` for code refactoring
-- `test:` for tests
-- `chore:` for maintenance
-
-Example:
-```bash
-git commit -m "feat: add data augmentation pipeline"
+uv lock --upgrade-package package-name
 ```
 
 ## Project Structure
 
-### Source Code Organization
-
 ```
-src/{{ cookiecutter.python_package }}/
-├── data/          # Data loading, preprocessing, datasets
-├── training/      # Training loops, trainers, callbacks
-├── deployment/    # Model export, serving, inference
-└── utils/         # Shared utilities, helpers, metrics
+.
+├── {{ cookiecutter.python_package }}/    # Main Python package
+│   ├── vision.py         # Computer vision utilities
+│   └── utils/            # Utility functions
+├── app/                  # FastAPI application
+│   ├── main.py          # API routes and server
+│   └── README.md        # API documentation
+├── science/              # Data science work
+│   ├── data/            # Data files (gitignored)
+│   ├── models/          # Trained models (gitignored)
+│   └── notebooks/       # Jupyter notebooks
+├── configs/              # Configuration files
+├── docker/               # Docker files
+├── docs/                 # Documentation
+└── tests/                # Test files
 ```
 
-### Configuration
+## Science Folder
 
-- **Configs**: `configs/*.yaml` - Training, model, deployment configs
-- **Environment**: `.env` - Secrets and environment-specific settings
-- **Project config**: `pyproject.toml` - Project metadata and tool configs
+The `science/` folder is for data science work and is excluded from most pre-commit hooks:
+
+- **`science/data/`** - Store data files here (gitignored)
+- **`science/models/`** - Store trained models here (gitignored)
+- **`science/notebooks/`** - Jupyter notebooks for exploration
+
+**Note**: While pre-commit hooks don't enforce code quality in the science folder, it's still recommended to:
+- Format Python files and notebooks with black
+- Keep notebooks organized and documented
+- Use meaningful variable names
+
+You can format the science folder manually:
+```bash
+uv run black science/
+```
+
+## Type Checking
+
+Type checking is performed with MyPy:
+
+```bash
+# Run type checking
+uv run mypy {{ cookiecutter.python_package }} app
+
+# Check specific file
+uv run mypy {{ cookiecutter.python_package }}/vision.py
+```
+
+The project uses type hints where possible. Add type annotations to new code:
+
+```python
+from typing import Any
+
+def process_image(image_path: str) -> dict[str, Any]:
+    """Process an image and return results."""
+    # Implementation
+    return {}
+```
+
+## Security Scanning
+
+Security vulnerabilities are checked with Bandit:
+
+```bash
+# Run security scan
+uv run bandit -r {{ cookiecutter.python_package }}/,app/
+
+# With specific severity level
+uv run bandit -r {{ cookiecutter.python_package }}/,app/ -ll  # Low/Medium
+```
 
 ## Best Practices
 
-1. **Type Hints**: Use type hints for better code clarity and IDE support
-2. **Docstrings**: Document functions and classes
-3. **Tests**: Write tests for new features
-4. **Formatting**: Let pre-commit hooks format your code
-5. **Linting**: Fix linting issues before committing
-6. **Dependencies**: Keep dependencies up to date
+1. **Write tests** for new functionality
+2. **Use type hints** for better code clarity
+3. **Format code** before committing (hooks do this automatically)
+4. **Keep functions small** and focused
+5. **Document complex logic** with docstrings
+6. **Follow PEP 8** style guidelines (enforced by tools)
 
-## IDE Setup
+## Common Issues
 
-### VS Code
+**Issue**: Pre-commit hooks fail
+- **Solution**: Run `make format` and `make lint` to fix issues, then commit again
 
-Recommended extensions:
-- Python
-- Pylance
-- Black Formatter
-- Ruff
+**Issue**: Type checking errors
+- **Solution**: Add type hints or use `# type: ignore` comments for third-party code
 
-### PyCharm
+**Issue**: Tests fail
+- **Solution**: Check test output, fix failing tests, ensure dependencies are installed
 
-- Enable Black as formatter
-- Configure Ruff as external tool
-- Enable type checking with MyPy
-
-## Next Steps
-
-- Review [Training Guide](TRAINING.md) for model development
-- Check [Quick Reference](QUICK_REFERENCE.md) for common commands
-- See [Troubleshooting](TROUBLESHOOTING.md) for common issues
-
+See [Troubleshooting](TROUBLESHOOTING.md) for more help.

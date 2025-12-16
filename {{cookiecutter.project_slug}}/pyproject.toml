@@ -26,15 +26,13 @@ dependencies = [
 ]
 
 [project.scripts]
-train_model = "scripts.train:app"
-export_model = "scripts.export:app"
-serve_model = "scripts.serve:app"
+serve_api = "app.main:run_server"
 
 [tool.setuptools]
-package-dir = { "" = "src" }
+package-dir = { "" = "." }
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
 namespaces = false
 
 [project.optional-dependencies]
@@ -55,13 +53,17 @@ dev = [
 deploy = [
   "fastapi>=0.112",
   "uvicorn[standard]>=0.30",
-  "onnx>=1.16",
-  "onnxruntime>=1.18",
+  "python-multipart>=0.0.6",
 ]
 ml = [
   "mlflow>=2.15",
   "pandas>=2.2",
   "scikit-learn>=1.5",
+]
+dvc = [
+  "dvc>=3.48",
+  # Optional: Install dvc-s3 only if using S3 storage
+  # "dvc-s3>=3.2.0",
 ]
 
 
@@ -84,7 +86,7 @@ testpaths = ["tests"]
 addopts = ["-q", "--disable-warnings"]
 
 [tool.coverage.run]
-source = ["src/{{ cookiecutter.python_package }}"]
+source = ["{{ cookiecutter.python_package }}", "app"]
 branch = true
 
 [tool.black]
@@ -111,7 +113,7 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 100
-known_first_party = ["{{ cookiecutter.python_package }}"]
+known_first_party = ["{{ cookiecutter.python_package }}", "app"]
 skip_glob = ["*/migrations/*", "*/__pycache__/*"]
 
 [tool.bandit]

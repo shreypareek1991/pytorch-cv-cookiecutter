@@ -58,13 +58,16 @@ nav:
   - Home: index.md
   - Getting Started: GETTING_STARTED.md
   - Development: DEVELOPMENT.md
-  - Training: TRAINING.md
+  - API Application: ../app/README.md
+  - API Reference: API.md
   - Docker: docker.md
   {% if cookiecutter.enable_mlflow_tracking == "y" or cookiecutter.enable_mlflow_tracking == "yes" %}
   - MLflow: mlflow.md
   {% endif %}
+  {% if cookiecutter.enable_dvc == "y" or cookiecutter.enable_dvc == "yes" %}
+  - DVC: dvc.md
+  {% endif %}
   - Remote Repository: remote_repo.md
-  - API Reference: API.md
   - Troubleshooting: TROUBLESHOOTING.md
   - Quick Reference: QUICK_REFERENCE.md
 

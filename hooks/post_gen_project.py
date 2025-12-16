@@ -86,13 +86,24 @@ def init_git_repo() -> None:
 
 
 def ensure_data_directories() -> None:
-    """Ensure all data subdirectories are created."""
+    """Ensure all data subdirectories are created with .gitignore and README files."""
     data_dir = PROJECT_DIR / "science" / "data"
     subdirs = ["raw", "processed", "external", "interim", "output"]
     
     for subdir in subdirs:
         subdir_path = data_dir / subdir
         subdir_path.mkdir(parents=True, exist_ok=True)
+        
+        # Ensure .gitignore exists
+        gitignore_path = subdir_path / ".gitignore"
+        if not gitignore_path.exists():
+            gitignore_path.write_text(
+                f"# Ignore all files in {subdir} data directory\n"
+                "*\n"
+                "!.gitignore\n"
+                "!README.md\n"
+            )
+        
         # Ensure README.md exists
         readme_path = subdir_path / "README.md"
         if not readme_path.exists():

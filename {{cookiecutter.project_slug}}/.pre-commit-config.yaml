@@ -1,11 +1,12 @@
 # Pre-commit hooks configuration
 # Install with: uv run pre-commit install
 # Run manually: uv run pre-commit run --all-files
+# Update hooks: uv run pre-commit autoupdate
 
 repos:
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -31,7 +32,7 @@ repos:
 
   # isort import sorter (exclude science folder)
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 5.13.3
     hooks:
       - id: isort
         args: ['--profile=black', '--line-length=100']
@@ -53,7 +54,8 @@ repos:
     rev: v1.11.1
     hooks:
       - id: mypy
-        additional_dependencies: [types-all]
+        # Removed types-all due to dependency issues (types-pkg-resources not available)
+        # Install specific type stubs in pyproject.toml if needed for better type checking
         args: ['--ignore-missing-imports', '--no-strict-optional']
         exclude: ^(tests/|science/)
 

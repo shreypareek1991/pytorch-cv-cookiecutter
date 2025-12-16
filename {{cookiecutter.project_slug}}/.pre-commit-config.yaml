@@ -25,7 +25,7 @@ repos:
     rev: 24.4.2
     hooks:
       - id: black
-        language_version: python{{ cookiecutter.python_version }}
+        # Use default Python from environment (uv manages the version)
         args: ['--line-length=100']
         # Allow black to format science folder, but other hooks will skip it
 

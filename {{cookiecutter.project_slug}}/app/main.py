@@ -58,7 +58,7 @@ async def health() -> HealthResponse:
 
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict(file: UploadFile = File(...)) -> PredictionResponse:
+async def predict(file: UploadFile = File(...)) -> PredictionResponse:  # noqa: B008
     """Predict endpoint for image classification.
 
     Upload an image file and get predictions.
